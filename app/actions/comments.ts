@@ -2,13 +2,18 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
-// プロンプトのコピーはログイン必須（DB側の register_copy RPCでも二重にチェックされる）
-export async function registerCopy(promptId: string) {
+export async function addComment(promptId: string, body: string, rating?: number) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("LOGIN_REQUIRED");
+  if (!body.trim()) throw new Error("EMPTY_BODY");
 
-  const { error } = await supabase.rpc("register_copy", { p_prompt_id: promptId });
+  const { error } = await supabase.from("comments").insert({
+    user_id: user.id,
+    prompt_id: promptId,
+    body: body.trim(),
+    rating: rating ?? null,
+  });
   if (error) throw error;
   revalidatePath(`/prompts/${promptId}`);
 }

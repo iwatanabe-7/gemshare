@@ -1,26 +1,43 @@
 "use client";
 import { useState } from "react";
-import { registerCopy } from "@/app/actions/copy";
+import { usePathname } from "next/navigation";
+import { Copy, Lock } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { registerCopy } from "@/app/actions/copy";
 
 export function CopyButton({
-  id, text, copies, isLoggedIn, onLoginRequired,
-}: { id: string; text: string; copies: number; isLoggedIn: boolean; onLoginRequired: () => void }) {
+  id, text, copies, isLoggedIn,
+}: { id: string; text: string; copies: number; isLoggedIn: boolean }) {
   const [busy, setBusy] = useState(false);
+  const pathname = usePathname();
+
+  const goLogin = async () => {
+    const supabase = createClient();
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${location.origin}/auth/callback?next=${encodeURIComponent(pathname)}` },
+    });
+  };
 
   const handleClick = async () => {
-    if (!isLoggedIn) { onLoginRequired(); return; } // ログインモーダルを開く
+    if (!isLoggedIn) return goLogin();
     setBusy(true);
     try {
       await navigator.clipboard.writeText(text);
-      await registerCopy(id); // カウント + copy_logs 記録（サーバー側でも未ログインは弾かれる）
+      await registerCopy(id);
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <button onClick={handleClick} disabled={busy}>
+    <button
+      onClick={handleClick}
+      disabled={busy}
+      className="flex flex-1 items-center justify-center gap-2 rounded-[14px] px-5 py-3.5 text-[14.5px] font-bold text-white disabled:opacity-60"
+      style={{ background: isLoggedIn ? "#4C3FE0" : "#8B84A3" }}
+    >
+      {isLoggedIn ? <Copy size={16} /> : <Lock size={16} />}
       {isLoggedIn ? `プロンプトをコピー（${copies}）` : "ログインしてコピー"}
     </button>
   );
