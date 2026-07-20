@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { LoginButton } from "@/components/login-button";
 import { GemCard } from "@/components/gem-card";
+import { MyGemCard } from "@/components/my-gem-card";
 
 const GEM_SELECT = `
   *,
@@ -69,7 +70,7 @@ export default async function MyPage() {
         <h2 className="mb-3.5 text-base font-extrabold text-[#170F2E]">あなたの投稿</h2>
         {myPosts && myPosts.length > 0 ? (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {myPosts.map((p: any) => <GemCard key={p.id} gem={p} />)}
+            {myPosts.map((p: any) => <MyGemCard key={p.id} gem={p} />)}
           </div>
         ) : (
           <EmptyState text="まだ投稿がありません。最初のGemを投稿してみましょう。" />
