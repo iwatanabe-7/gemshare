@@ -22,3 +22,18 @@ html, body {
 * {
   box-sizing: border-box;
 }
+
+.input {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(23, 15, 46, 0.10);
+  font-size: 13.5px;
+  outline: none;
+  background: #fff;
+  font-family: inherit;
+  color: var(--ink);
+}
+.input:focus {
+  border-color: var(--violet-700);
+}

@@ -15,9 +15,24 @@ export async function toggleFavorite(promptId: string) {
     .maybeSingle();
 
   if (existing) {
-    await supabase.from("favorites").delete().eq("id", existing.id);
+  const { error } = await supabase
+    .from("favorites")
+    .delete()
+    .eq("id", existing.id);
+
+  if (error) throw error;
   } else {
-    await supabase.from("favorites").insert({ user_id: user.id, prompt_id: promptId });
+    const { error } = await supabase
+      .from("favorites")
+      .insert({
+        user_id: user.id,
+        prompt_id: promptId,
+      });
+
+    if (error) throw error;
   }
   revalidatePath(`/prompts/${promptId}`);
+  revalidatePath("/");
+  revalidatePath("/ranking");
+  revalidatePath("/search");
 }
