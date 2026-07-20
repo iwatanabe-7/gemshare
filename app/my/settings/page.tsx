@@ -7,11 +7,7 @@ export default async function SettingsPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/my");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("name, email")
-    .eq("id", user.id)
-    .single();
+const { data: profile } = (await supabase.rpc("get_my_profile").single()) as { data: any };
 
   return (
     <div className="mx-auto max-w-[480px] px-6 py-9">
