@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { updatePrompt } from "@/app/actions/prompts";
+import { TITLE_MIN_LENGTH, TITLE_MAX_LENGTH } from "@/lib/constants";
 
 export default async function EditPromptPage({
   params,
@@ -34,7 +35,7 @@ export default async function EditPromptPage({
 
       <form action={updatePromptWithId} className="flex flex-col gap-4">
         <Field label="タイトル">
-          <input name="title" required defaultValue={prompt.title} className="input" />
+          <input name="title" required minLength={TITLE_MIN_LENGTH} maxLength={TITLE_MAX_LENGTH} defaultValue={prompt.title} className="input" />
         </Field>
 
         <Field label="説明">

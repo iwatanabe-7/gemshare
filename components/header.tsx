@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Logo } from "./logo";
 import { LoginButton } from "./login-button";
 import { LogoutButton } from "./logout-button";
 import { SearchBar } from "./search-bar";
@@ -9,20 +10,22 @@ export async function Header() {
   const { data: { user } } = await supabase.auth.getUser();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[rgba(23,15,46,0.10)] bg-[rgba(250,249,255,0.92)] backdrop-blur">
-      <div className="mx-auto flex max-w-[1100px] flex-wrap items-center justify-between gap-4 px-6 py-3.5">
-        <Link href="/" className="text-lg font-extrabold text-[#170F2E]">
-          GemShare
+    <header className="sticky top-0 z-40 bg-[#FAF9FF]" style={{ borderBottom: "2px solid #170F2E" }}>
+      <div className="mx-auto flex max-w-[1100px] flex-wrap items-center justify-between gap-4 px-6 py-3">
+        <Link href="/">
+          <Logo size={30} />
         </Link>
-        <nav className="flex gap-5 text-sm font-semibold text-[#5B5470]">
+
+        <nav className="hidden gap-5 text-sm font-bold text-[#170F2E] md:flex">
           <Link href="/categories">カテゴリ</Link>
           <Link href="/ranking">ランキング</Link>
           <Link href="/prompts/new">投稿する</Link>
         </nav>
+
         <div className="flex flex-1 items-center justify-end gap-4">
           <SearchBar />
           {user ? (
-            <div className="flex items-center gap-4 text-sm font-bold text-[#4C3FE0]">
+            <div className="hidden items-center gap-4 text-sm font-bold text-[#4C3FE0] md:flex">
               <Link href="/my/notifications">通知</Link>
               <Link href="/my">マイページ</Link>
               <LogoutButton />

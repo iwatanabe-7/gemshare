@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Header } from "@/components/header";
+import { BottomNav } from "@/components/bottom-nav";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -30,7 +31,9 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <Header />
-        <main className="flex-1">{children}</main>
+        {/* pb-20: 下部アイコンバーにコンテンツが隠れないための余白（スマホのみ） */}
+        <main className="flex-1 pb-20 md:pb-0">{children}</main>
+        <BottomNav />
       </body>
     </html>
   );

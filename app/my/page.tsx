@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { LoginButton } from "@/components/login-button";
+import { LogoutButton } from "@/components/logout-button";
 import { GemCard } from "@/components/gem-card";
-import { MyGemCard } from "@/components/my-gem-card";
 
 const GEM_SELECT = `
   *,
@@ -61,16 +61,18 @@ export default async function MyPage() {
             投稿 {myPosts?.length ?? 0}件 ・ お気に入り {myFavorites.length}件
           </div>
         </div>
-        <a href="/my/settings" className="ml-auto text-[13px] font-bold text-[#4C3FE0]">
-          プロフィール編集
-        </a>
+        <div className="ml-auto flex items-center gap-4">
+          <a href="/my/settings" className="text-[13px] font-bold text-[#4C3FE0]">
+            プロフィール編集
+          </a>
+        </div>
       </div>
 
       <section className="mb-12">
         <h2 className="mb-3.5 text-base font-extrabold text-[#170F2E]">あなたの投稿</h2>
         {myPosts && myPosts.length > 0 ? (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {myPosts.map((p: any) => <MyGemCard key={p.id} gem={p} />)}
+            {myPosts.map((p: any, i: number) => <GemCard key={p.id} gem={p} index={i} />)}
           </div>
         ) : (
           <EmptyState text="まだ投稿がありません。最初のGemを投稿してみましょう。" />
@@ -87,6 +89,10 @@ export default async function MyPage() {
           <EmptyState text="お気に入りしたGemはまだありません。" />
         )}
       </section>
+
+      <div className="mt-14 flex justify-center border-t pt-8" style={{ borderColor: "rgba(23,15,46,0.10)" }}>
+        <LogoutButton />
+      </div>
     </div>
   );
 }

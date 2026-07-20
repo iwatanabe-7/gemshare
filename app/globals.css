@@ -3,6 +3,7 @@
 :root {
   --violet-900: #170F2E;
   --violet-700: #4C3FE0;
+  --violet-400: #7A6BFF;
   --violet-100: #ECE8FF;
   --paper: #FAF9FF;
   --paper-dim: #F1EEFF;
@@ -18,7 +19,6 @@ html, body {
   background: var(--paper);
   color: var(--ink);
 }
-
 * {
   box-sizing: border-box;
 }
@@ -26,8 +26,8 @@ html, body {
 .input {
   width: 100%;
   padding: 11px 14px;
-  border-radius: 10px;
-  border: 1px solid rgba(23, 15, 46, 0.10);
+  border-radius: 12px;
+  border: 2px solid var(--ink);
   font-size: 13.5px;
   outline: none;
   background: #fff;
@@ -36,4 +36,18 @@ html, body {
 }
 .input:focus {
   border-color: var(--violet-700);
+}
+
+.hard-card {
+  border: 2px solid var(--ink);
+  box-shadow: 6px 6px 0 var(--ink);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.hard-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 8px 8px 0 var(--ink);
+}
+.hard-card:active {
+  transform: translate(1px, 1px);
+  box-shadow: 4px 4px 0 var(--ink);
 }

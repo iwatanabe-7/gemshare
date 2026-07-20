@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { LoginButton } from "@/components/login-button";
 import { createPrompt } from "@/app/actions/prompts";
+import { TITLE_MIN_LENGTH, TITLE_MAX_LENGTH } from "@/lib/constants";
 
 export default async function NewPromptPage() {
   const supabase = await createClient();
@@ -34,7 +35,7 @@ export default async function NewPromptPage() {
 
       <form action={createPrompt} className="flex flex-col gap-4">
         <Field label="タイトル">
-          <input name="title" required className="input" placeholder="例：SEO記事を書くGem" />
+          <input name="title" required minLength={TITLE_MIN_LENGTH} maxLength={TITLE_MAX_LENGTH} className="input" placeholder="例：SEO記事を書くGem" />
         </Field>
 
         <Field label="説明">

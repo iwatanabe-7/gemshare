@@ -2,6 +2,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { TITLE_MIN_LENGTH, TITLE_MAX_LENGTH } from "@/lib/constants";
 
 export async function createPrompt(formData: FormData) {
   const supabase = await createClient();
@@ -18,6 +19,9 @@ export async function createPrompt(formData: FormData) {
 
   if (!title || !promptBody || !categoryId) {
     throw new Error("タイトル・カテゴリ・プロンプトは必須です");
+  }
+  if (title.length < TITLE_MIN_LENGTH || title.length > TITLE_MAX_LENGTH) {
+    throw new Error(`タイトルは${TITLE_MIN_LENGTH}〜${TITLE_MAX_LENGTH}文字で入力してください`);
   }
 
   const { data: prompt, error } = await supabase
@@ -43,14 +47,11 @@ export async function createPrompt(formData: FormData) {
     .slice(0, 6);
 
   for (const name of tagNames) {
-    const { data: tag } = await supabase
-      .from("tags")
-      .upsert({ name }, { onConflict: "name" })
-      .select()
-      .single();
-    if (tag) {
-      await supabase.from("prompt_tags").insert({ prompt_id: prompt.id, tag_id: tag.id });
-    }
+    const tagId = await ensureTag(supabase, name);
+    const { error: linkError } = await supabase
+      .from("prompt_tags")
+      .insert({ prompt_id: prompt.id, tag_id: tagId });
+    if (linkError) throw linkError;
   }
 
   revalidatePath("/");
@@ -84,6 +85,9 @@ export async function updatePrompt(promptId: string, formData: FormData) {
   if (!title || !promptBody || !categoryId) {
     throw new Error("タイトル・カテゴリ・プロンプトは必須です");
   }
+  if (title.length < TITLE_MIN_LENGTH || title.length > TITLE_MAX_LENGTH) {
+    throw new Error(`タイトルは${TITLE_MIN_LENGTH}〜${TITLE_MAX_LENGTH}文字で入力してください`);
+  }
 
   const { error } = await supabase
     .from("prompts")
@@ -99,7 +103,11 @@ export async function updatePrompt(promptId: string, formData: FormData) {
   if (error) throw error;
 
   // タグは一旦全部外して、入力し直された内容で付け直す
-  await supabase.from("prompt_tags").delete().eq("prompt_id", promptId);
+  const { error: delError } = await supabase
+    .from("prompt_tags")
+    .delete()
+    .eq("prompt_id", promptId);
+  if (delError) throw delError;
 
   const tagNames = tagsRaw
     .split(/[,、\s]+/)
@@ -108,17 +116,37 @@ export async function updatePrompt(promptId: string, formData: FormData) {
     .slice(0, 6);
 
   for (const name of tagNames) {
-    const { data: tag } = await supabase
-      .from("tags")
-      .upsert({ name }, { onConflict: "name" })
-      .select()
-      .single();
-    if (tag) {
-      await supabase.from("prompt_tags").insert({ prompt_id: promptId, tag_id: tag.id });
-    }
+    const tagId = await ensureTag(supabase, name);
+    const { error: linkError } = await supabase
+      .from("prompt_tags")
+      .insert({ prompt_id: promptId, tag_id: tagId });
+    if (linkError) throw linkError;
   }
 
   revalidatePath("/");
-  revalidatePath(`/prompts/${promptId}`);
+  // 'layout' 指定で [id] セグメント配下（詳細ページと /edit）をまとめて無効化する。
+  // これを詳細ページだけにすると、編集画面に戻ったときフォームが古いタグのままになる。
+  revalidatePath("/prompts/[id]", "layout");
   redirect(`/prompts/${promptId}`);
+}
+
+// tags は全ユーザー共有のマスタ。既存タグ名を upsert すると ON CONFLICT DO UPDATE で
+// 他人が作った行を UPDATE しようとして RLS(42501) に弾かれる。
+// そのため「無ければ作る（DO NOTHING）→ 名前で id を引く」だけにして UPDATE 経路を踏まない。
+async function ensureTag(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  name: string,
+): Promise<string> {
+  const { error: insertError } = await supabase
+    .from("tags")
+    .upsert({ name }, { onConflict: "name", ignoreDuplicates: true });
+  if (insertError) throw insertError;
+
+  const { data: tag, error: selectError } = await supabase
+    .from("tags")
+    .select("id")
+    .eq("name", name)
+    .single();
+  if (selectError) throw selectError;
+  return tag.id;
 }
